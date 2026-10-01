@@ -5,6 +5,7 @@ The `openlogi` command-line tool. For install and configuration, see the
 
 ```sh
 openlogi list                 # paired devices: slot, codename, kind, online, battery
+openlogi haptic completed     # play a named MX Master 4 haptic waveform
 openlogi assets sync          # pre-fetch device renders from the fastest available mirror
 openlogi diag features        # dump every HID++ feature the active device reports
 openlogi diag controls        # dump reprogrammable controls and capability flags
@@ -12,6 +13,19 @@ openlogi diag dpi             # read → write → read-back → restore DPI (sm
 openlogi diag smartshift      # toggle SmartShift and restore (smoke test)
 openlogi diag lighting ff0000 # solid colour for a wired RGB keyboard (any RRGGBB hex)
 ```
+
+`openlogi haptic <waveform>` sends the request through the running OpenLogi
+Agent, so scripts never compete with it for the receiver. Use `--device
+"MX Master 4"` when more than one haptic-capable device is connected. Names
+are kebab-case: `sharp-state-change`, `damp-state-change`, `sharp-collision`,
+`damp-collision`, `subtle-collision`, `happy-alert`, `angry-alert`, `completed`,
+`square`, `wave`, `firework`, `mad`, `knock`, `jingle`, `ringing`, and
+`whisper-collision`.
+
+The companion extension under
+[`integrations/vscode-openlogi-haptics`](../integrations/vscode-openlogi-haptics)
+installs a user-level Copilot hook that runs this command when an agent turn
+stops or its session ends.
 
 Running `openlogi` with no subcommand defaults to `list`. Set
 `OPENLOGI_LOG=debug` for verbose tracing in the CLI, GUI, or agent.

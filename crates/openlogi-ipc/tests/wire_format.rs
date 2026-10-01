@@ -40,9 +40,10 @@ use openlogi_core::device::{
 };
 use openlogi_core::hid::{
     BacklightMode, BacklightState, BacklightStatus, Click, DeviceRoute, Dpi, DpiCapabilities,
-    DpiInfo, FnLockState, HidppFeatureErrorKind, HidppOperation, LightCommand, PasskeyMethod,
-    ReceiverSelector, ScrollReportingTarget, ScrollWheelMode, SmartShiftAutoDisengage,
-    SmartShiftMode, SmartShiftStatus, SmartShiftThreshold, TunableTorque, WriteError,
+    DpiInfo, FnLockState, HapticWaveform, HidppFeatureErrorKind, HidppOperation, LightCommand,
+    PasskeyMethod, ReceiverSelector, ScrollReportingTarget, ScrollWheelMode,
+    SmartShiftAutoDisengage, SmartShiftMode, SmartShiftStatus, SmartShiftThreshold, TunableTorque,
+    WriteError,
 };
 use openlogi_ipc::{
     ActionRingCommandError, ActionRingInvocation, ActionRingPresentation, AgentRequest,
@@ -102,7 +103,7 @@ fn representative_smartshift_status() -> SmartShiftStatus {
 /// that makes that visible in the same diff.
 #[test]
 fn protocol_version_is_pinned() {
-    assert_eq!(PROTOCOL_VERSION, 34);
+    assert_eq!(PROTOCOL_VERSION, 35);
 }
 
 #[test]
@@ -207,6 +208,12 @@ fn request_variant_order() {
         },
         "1902",
     );
+    assert_wire(
+        &AgentRequest::DeclareClient {
+            kind: ClientKind::Controller,
+        },
+        "1903",
+    );
 }
 
 #[test]
@@ -257,6 +264,24 @@ fn semantic_read_requests() {
         },
         "1e0008463030444341464501",
     );
+    assert_wire(
+        &AgentRequest::PlayHaptic {
+            route: DeviceRoute::Bolt {
+                receiver_uid: "F00DCAFE".into(),
+                slot: 1,
+            },
+            waveform: HapticWaveform::Ringing,
+        },
+        "1f00084630304443414645010e",
+    );
+}
+
+#[test]
+fn haptic_waveforms_are_append_only() {
+    assert_wire(&HapticWaveform::SharpStateChange, "00");
+    assert_wire(&HapticWaveform::SubtleCollision, "04");
+    assert_wire(&HapticWaveform::Ringing, "0e");
+    assert_wire(&HapticWaveform::WhisperCollision, "0f");
 }
 
 /// A chord crosses the wire as its modifier bits and the key's HID usage.

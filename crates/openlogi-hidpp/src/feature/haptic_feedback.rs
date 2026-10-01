@@ -17,10 +17,38 @@ bitflags::bitflags! {
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
     #[cfg_attr(feature = "serde", derive(serde::Serialize))]
     pub struct SupportedWaveforms: u32 {
+        /// Sharp click for a state transition.
+        const SHARP_STATE_CHANGE = 1 << 0;
         /// A damp state-change pulse, used after activating a ring action.
         const DAMP_STATE_CHANGE = 1 << 1;
+        /// Sharp boundary collision.
+        const SHARP_COLLISION = 1 << 2;
+        /// Dampened boundary collision.
+        const DAMP_COLLISION = 1 << 3;
         /// A subtle collision pulse, used when the highlighted ring slot changes.
         const SUBTLE_COLLISION = 1 << 4;
+        /// Pleasant notification pattern.
+        const HAPPY_ALERT = 1 << 5;
+        /// Urgent notification pattern.
+        const ANGRY_ALERT = 1 << 6;
+        /// Task-completion pattern.
+        const COMPLETED = 1 << 7;
+        /// Repeating square pattern.
+        const SQUARE = 1 << 8;
+        /// Rising and falling wave pattern.
+        const WAVE = 1 << 9;
+        /// Burst pattern.
+        const FIREWORK = 1 << 10;
+        /// Intense repeated pattern.
+        const MAD = 1 << 11;
+        /// Repeated knock pattern.
+        const KNOCK = 1 << 12;
+        /// Musical jingle pattern.
+        const JINGLE = 1 << 13;
+        /// Ringing notification pattern.
+        const RINGING = 1 << 14;
+        /// Very light boundary collision.
+        const WHISPER_COLLISION = 1 << 27;
     }
 }
 
@@ -28,10 +56,38 @@ bitflags::bitflags! {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, IntoPrimitive, TryFromPrimitive)]
 #[repr(u8)]
 pub enum HapticWaveform {
+    /// Sharp click for a state transition.
+    SharpStateChange = 0,
     /// Confirmation pulse used when an action runs.
     DampStateChange = 1,
+    /// Sharp boundary collision.
+    SharpCollision = 2,
+    /// Dampened boundary collision.
+    DampCollision = 3,
     /// Light boundary pulse used for hover transitions.
     SubtleCollision = 4,
+    /// Pleasant notification pattern.
+    HappyAlert = 5,
+    /// Urgent notification pattern.
+    AngryAlert = 6,
+    /// Task-completion pattern.
+    Completed = 7,
+    /// Repeating square pattern.
+    Square = 8,
+    /// Rising and falling wave pattern.
+    Wave = 9,
+    /// Burst pattern.
+    Firework = 10,
+    /// Intense repeated pattern.
+    Mad = 11,
+    /// Repeated knock pattern.
+    Knock = 12,
+    /// Musical jingle pattern.
+    Jingle = 13,
+    /// Ringing notification pattern.
+    Ringing = 14,
+    /// Very light boundary collision.
+    WhisperCollision = 27,
 }
 
 /// Valid device haptic intensity (`0..=100`).

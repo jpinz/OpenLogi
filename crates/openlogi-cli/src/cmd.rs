@@ -8,6 +8,7 @@ pub mod backlight;
 pub mod camera;
 pub mod diag;
 pub mod fixture;
+pub mod haptic;
 pub mod light;
 pub mod list;
 pub mod snapshot;
@@ -31,6 +32,8 @@ pub enum Command {
     /// Record and validate privacy-safe device fixtures.
     #[command(subcommand)]
     Fixture(fixture::FixtureCmd),
+    /// Play a named haptic waveform through the OpenLogi Agent.
+    Haptic(haptic::HapticArgs),
     /// Inspect and control standalone Logitech lights.
     #[command(subcommand)]
     Light(light::LightCmd),
@@ -53,6 +56,7 @@ impl Command {
             Self::Assets(cmd) => cmd.run()?,
             Self::Diag(cmd) => cmd.run().await?,
             Self::Fixture(cmd) => cmd.run().await?,
+            Self::Haptic(args) => haptic::run(args).await?,
             Self::Light(cmd) => cmd.run().await?,
         }
         Ok(ExitCode::SUCCESS)

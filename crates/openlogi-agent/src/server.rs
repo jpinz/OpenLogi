@@ -270,6 +270,21 @@ impl Agent for AgentServer {
         self.pairing.unpair(&route).await
     }
 
+    async fn play_haptic(
+        self,
+        _: Context,
+        route: DeviceRoute,
+        waveform: HapticWaveform,
+    ) -> Result<(), WriteError> {
+        self.shared
+            .device(&route)
+            .run(HidppOperation::PlayHaptic, |channel| async move {
+                openlogi_hid::ensure_haptics_armed_on(&channel).await?;
+                openlogi_hid::play_haptic_on(&channel, waveform).await
+            })
+            .await
+    }
+
     async fn next_pairing(self, _: Context) -> Option<PairingUpdate> {
         self.pairing.next_update().await
     }

@@ -5,9 +5,12 @@ use hidpp::{
     device::Device,
     feature::{
         CreatableFeature,
-        haptic_feedback::{HapticFeedbackFeature, HapticIntensity, HapticWaveform},
+        haptic_feedback::{
+            HapticFeedbackFeature, HapticIntensity, HapticWaveform as ProtocolHapticWaveform,
+        },
     },
 };
+use openlogi_core::hid::HapticWaveform;
 
 use crate::SharedChannel;
 use crate::backend::HidBackend;
@@ -66,6 +69,27 @@ struct FeatureLocation {
 }
 
 static CACHED_LOCATION: Mutex<Option<FeatureLocation>> = Mutex::new(None);
+
+fn protocol_waveform(waveform: HapticWaveform) -> ProtocolHapticWaveform {
+    match waveform {
+        HapticWaveform::SharpStateChange => ProtocolHapticWaveform::SharpStateChange,
+        HapticWaveform::DampStateChange => ProtocolHapticWaveform::DampStateChange,
+        HapticWaveform::SharpCollision => ProtocolHapticWaveform::SharpCollision,
+        HapticWaveform::DampCollision => ProtocolHapticWaveform::DampCollision,
+        HapticWaveform::SubtleCollision => ProtocolHapticWaveform::SubtleCollision,
+        HapticWaveform::HappyAlert => ProtocolHapticWaveform::HappyAlert,
+        HapticWaveform::AngryAlert => ProtocolHapticWaveform::AngryAlert,
+        HapticWaveform::Completed => ProtocolHapticWaveform::Completed,
+        HapticWaveform::Square => ProtocolHapticWaveform::Square,
+        HapticWaveform::Wave => ProtocolHapticWaveform::Wave,
+        HapticWaveform::Firework => ProtocolHapticWaveform::Firework,
+        HapticWaveform::Mad => ProtocolHapticWaveform::Mad,
+        HapticWaveform::Knock => ProtocolHapticWaveform::Knock,
+        HapticWaveform::Jingle => ProtocolHapticWaveform::Jingle,
+        HapticWaveform::Ringing => ProtocolHapticWaveform::Ringing,
+        HapticWaveform::WhisperCollision => ProtocolHapticWaveform::WhisperCollision,
+    }
+}
 
 /// Rebuild the cached accessor for exactly `channel`, without I/O. `None`
 /// when nothing is cached, the entry belongs to another (or a dead) channel,
@@ -160,15 +184,18 @@ pub async fn play_haptic_on(
     let channel = shared.channel();
     let index = shared.device_index();
     if let Some(feature) = cached_feature(channel, index) {
-        if feature.play(waveform).await.is_ok() {
+        if feature.play(protocol_waveform(waveform)).await.is_ok() {
             return Ok(());
         }
         clear_cached_location();
     }
     let (feature, feature_index) = feature_on_channel(channel, index).await?;
-    let result = feature.play(waveform).await.map_err(|error| {
-        classify_hidpp_error(error, HidppOperation::PlayHaptic, HapticFeedbackFeature::ID)
-    });
+    let result = feature
+        .play(protocol_waveform(waveform))
+        .await
+        .map_err(|error| {
+            classify_hidpp_error(error, HidppOperation::PlayHaptic, HapticFeedbackFeature::ID)
+        });
     if result.is_ok() {
         store_cached_location(channel, index, feature_index);
     }
@@ -184,9 +211,12 @@ pub async fn play_haptic(
     let index = route.device_index();
     with_route(backend, route, move |channel| async move {
         let (feature, _) = feature_on_channel(&channel, index).await?;
-        feature.play(waveform).await.map_err(|error| {
-            classify_hidpp_error(error, HidppOperation::PlayHaptic, HapticFeedbackFeature::ID)
-        })
+        feature
+            .play(protocol_waveform(waveform))
+            .await
+            .map_err(|error| {
+                classify_hidpp_error(error, HidppOperation::PlayHaptic, HapticFeedbackFeature::ID)
+            })
     })
     .await
 }

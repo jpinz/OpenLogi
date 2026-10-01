@@ -8,8 +8,8 @@ use openlogi_core::binding::ActionRingSlot;
 use openlogi_core::config::Lighting;
 use openlogi_core::device::DeviceInventory;
 use openlogi_core::hid::{
-    BacklightMode, BacklightState, BacklightStatus, Dpi, DpiInfo, FnLockState, LightCommand,
-    PasskeyMethod, ReceiverSelector, ScrollWheelMode, SmartShiftStatus,
+    BacklightMode, BacklightState, BacklightStatus, Dpi, DpiInfo, FnLockState, HapticWaveform,
+    LightCommand, PasskeyMethod, ReceiverSelector, ScrollWheelMode, SmartShiftStatus,
 };
 use openlogi_fixture::{
     CANONICAL_DEVICE_PROFILE_JSON, SyntheticIdentityKind, classify_synthetic_identity_bytes,
@@ -164,6 +164,15 @@ impl Agent for TestAgent {
         _route: DeviceRoute,
     ) -> Result<(), PairingFailure> {
         unreachable!("profile capture must never unpair a device")
+    }
+
+    async fn play_haptic(
+        self,
+        _: TarpcContext,
+        _route: DeviceRoute,
+        _waveform: HapticWaveform,
+    ) -> Result<(), WriteError> {
+        unreachable!("profile capture must never play haptics")
     }
 
     async fn read_dpi(self, _: TarpcContext, route: DeviceRoute) -> Result<DpiInfo, WriteError> {

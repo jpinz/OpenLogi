@@ -1,0 +1,130 @@
+{
+  "name": "openlogi-haptics",
+  "displayName": "OpenLogi Haptics",
+  "description": "Trigger Logitech MX Master haptics when Copilot needs attention.",
+  "version": "0.1.0",
+  "publisher": "openlogi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AprilNEA/OpenLogi.git",
+    "directory": "integrations/vscode-openlogi-haptics"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "copilot",
+    "haptics",
+    "logitech",
+    "mx-master",
+    "openlogi"
+  ],
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:openlogiHaptics.enable",
+    "onCommand:openlogiHaptics.disable",
+    "onCommand:openlogiHaptics.testAttention",
+    "onCommand:openlogiHaptics.testSessionEnd"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "openlogiHaptics.enable",
+        "title": "OpenLogi Haptics: Enable Copilot Hooks"
+      },
+      {
+        "command": "openlogiHaptics.disable",
+        "title": "OpenLogi Haptics: Disable Copilot Hooks"
+      },
+      {
+        "command": "openlogiHaptics.testAttention",
+        "title": "OpenLogi Haptics: Test Attention Haptic"
+      },
+      {
+        "command": "openlogiHaptics.testSessionEnd",
+        "title": "OpenLogi Haptics: Test Session-End Haptic"
+      }
+    ],
+    "configuration": {
+      "title": "OpenLogi Haptics",
+      "properties": {
+        "openlogiHaptics.command": {
+          "type": "string",
+          "default": "openlogi",
+          "description": "Path to the OpenLogi CLI executable. Enter a path only, without arguments."
+        },
+        "openlogiHaptics.device": {
+          "type": "string",
+          "default": "",
+          "description": "Optional case-insensitive device-name filter passed to openlogi haptic --device."
+        },
+        "openlogiHaptics.attentionWaveform": {
+          "type": "string",
+          "default": "happy-alert",
+          "enum": [
+            "sharp-state-change",
+            "damp-state-change",
+            "sharp-collision",
+            "damp-collision",
+            "subtle-collision",
+            "happy-alert",
+            "angry-alert",
+            "completed",
+            "square",
+            "wave",
+            "firework",
+            "mad",
+            "knock",
+            "jingle",
+            "ringing",
+            "whisper-collision"
+          ],
+          "description": "Waveform played when an agent turn stops and may need your attention."
+        },
+        "openlogiHaptics.sessionEndWaveform": {
+          "type": "string",
+          "default": "completed",
+          "enum": [
+            "sharp-state-change",
+            "damp-state-change",
+            "sharp-collision",
+            "damp-collision",
+            "subtle-collision",
+            "happy-alert",
+            "angry-alert",
+            "completed",
+            "square",
+            "wave",
+            "firework",
+            "mad",
+            "knock",
+            "jingle",
+            "ringing",
+            "whisper-collision"
+          ],
+          "description": "Waveform played when Copilot reports that the whole session ended."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "check": "tsc -p . --noEmit",
+    "test": "npm run compile && node --test dist/test/hooks.test.js",
+    "package": "npm run compile && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.100.0",
+    "@vscode/vsce": "^3.6.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -9,6 +9,7 @@ use std::future::Future;
 use std::time::Duration;
 
 use anyhow::{Result, anyhow};
+use openlogi_core::hid::{DeviceRoute, HapticWaveform};
 use openlogi_ipc::client::{self, ConnectError};
 use openlogi_ipc::{AgentClient, AgentSnapshot, ClientKind};
 use tarpc::client::RpcError;
@@ -48,6 +49,11 @@ pub(crate) async fn connect() -> Result<AgentClient, ConnectError> {
     client::connect_as(ClientKind::Cli).await
 }
 
+/// Connect as a device-control client, arming a dormant agent when necessary.
+pub(crate) async fn connect_controller() -> Result<AgentClient, ConnectError> {
+    client::connect_as(ClientKind::Controller).await
+}
+
 /// The agent's device picture, or why it did not arrive.
 pub(crate) async fn snapshot(client: &AgentClient) -> Result<AgentSnapshot> {
     call(client.snapshot(context::current()))
@@ -60,4 +66,21 @@ pub(crate) async fn snapshot(client: &AgentClient) -> Result<AgentSnapshot> {
                 anyhow!("the running Agent disconnected while providing its device snapshot")
             }
         })
+}
+
+/// Ask the agent to play one waveform on an already-selected device.
+pub(crate) async fn play_haptic(
+    client: &AgentClient,
+    route: DeviceRoute,
+    waveform: HapticWaveform,
+) -> Result<()> {
+    let response = call(client.play_haptic(context::current(), route, waveform))
+        .await
+        .map_err(|failure| match failure {
+            CallFailure::TimedOut => anyhow!("the running Agent timed out while playing haptics"),
+            CallFailure::Disconnected => {
+                anyhow!("the running Agent disconnected while playing haptics")
+            }
+        })?;
+    response.map_err(Into::into)
 }

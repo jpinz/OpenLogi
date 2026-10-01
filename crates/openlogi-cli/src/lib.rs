@@ -50,6 +50,7 @@ mod tests {
     use cmd::fixture::record_profile::RecordProfileArgs;
     use cmd::fixture::verify::VerifyArgs;
     use cmd::fixture::{FixtureCmd, FixtureRecordCmd};
+    use openlogi_core::hid::HapticWaveform;
 
     /// Clap's own structural validation (arg ID collisions, invalid
     /// `conflicts_with` targets, etc.) — cheap and catches a broken derive
@@ -100,6 +101,32 @@ mod tests {
     fn backlight_rejects_an_unknown_action() {
         let result = Cli::try_parse_from(["openlogi", "backlight", "dim"]);
         result.expect_err("an unknown backlight action must be rejected");
+    }
+
+    #[test]
+    fn haptic_parses_named_waveforms_and_device_filter() {
+        let cli = Cli::try_parse_from([
+            "openlogi",
+            "haptic",
+            "happy-alert",
+            "--device",
+            "MX Master 4",
+        ])
+        .expect("haptic command parses");
+
+        match cli.cmd.expect("subcommand present") {
+            Command::Haptic(args) => {
+                assert_eq!(args.waveform, HapticWaveform::HappyAlert);
+                assert_eq!(args.device.as_deref(), Some("MX Master 4"));
+            }
+            other => panic!("expected Haptic, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn haptic_rejects_an_unknown_waveform() {
+        Cli::try_parse_from(["openlogi", "haptic", "buzz"])
+            .expect_err("unknown waveform must be rejected");
     }
 
     #[test]

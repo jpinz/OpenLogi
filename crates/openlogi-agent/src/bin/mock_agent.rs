@@ -54,8 +54,8 @@ use openlogi_core::device::{
 use openlogi_core::single_instance::{self, InstanceError, Role};
 use openlogi_fixture::{DeviceProfile, FixtureError, ProfileDeviceSettings, ProfileSetting};
 use openlogi_hid::{
-    BacklightState, DeviceRoute, Dpi, DpiInfo, FnLockState, LightCommand, PasskeyMethod,
-    ReceiverSelector, ScrollWheelMode, SmartShiftStatus, WriteError,
+    BacklightState, DeviceRoute, Dpi, DpiInfo, FnLockState, HapticWaveform, LightCommand,
+    PasskeyMethod, ReceiverSelector, ScrollWheelMode, SmartShiftStatus, WriteError,
 };
 use openlogi_ipc::transport;
 use openlogi_ipc::{
@@ -874,6 +874,17 @@ impl Agent for MockAgent {
         let result = self.state.lock().await.unpair(&route);
         info!(%route, ok = result.is_ok(), "unpair_device");
         result
+    }
+
+    async fn play_haptic(
+        self,
+        _: Context,
+        route: DeviceRoute,
+        waveform: HapticWaveform,
+    ) -> Result<(), WriteError> {
+        self.state.lock().await.settings_for(&route)?;
+        info!(%route, %waveform, "play_haptic");
+        Ok(())
     }
 
     async fn request_accessibility_prompt(self, _: Context) {

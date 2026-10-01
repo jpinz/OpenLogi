@@ -70,3 +70,5 @@ node_modules/
 
 # Packaging output.
 *.dmg
+/integrations/vscode-openlogi-haptics/dist/
+/integrations/vscode-openlogi-haptics/*.vsix

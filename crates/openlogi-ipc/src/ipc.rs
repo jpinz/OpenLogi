@@ -17,8 +17,8 @@ use openlogi_core::binding::{ActionRingIcon, ActionRingSlot};
 use openlogi_core::config::Lighting;
 use openlogi_core::device::{DeviceInventory, StandaloneDevice};
 use openlogi_core::hid::{
-    BacklightState, DeviceRoute, Dpi, DpiInfo, FnLockState, LightCommand, PairingError,
-    PasskeyMethod, ReceiverSelector, ScrollWheelMode, SmartShiftStatus, WriteError,
+    BacklightState, DeviceRoute, Dpi, DpiInfo, FnLockState, HapticWaveform, LightCommand,
+    PairingError, PasskeyMethod, ReceiverSelector, ScrollWheelMode, SmartShiftStatus, WriteError,
 };
 use serde::{Deserialize, Serialize};
 pub use succession::Identity;
@@ -67,7 +67,8 @@ pub use succession::Identity;
 ///      `HidppOperation::ReadFnLock` appended.
 /// v33: `Agent::unpair_device` appended.
 /// v34: `KeyCombo` gains the Super modifier bit (`Super`, `Win`, `Meta`).
-pub const PROTOCOL_VERSION: u32 = 34;
+/// v35: `ClientKind::Controller` and `Agent::play_haptic` appended.
+pub const PROTOCOL_VERSION: u32 = 35;
 
 /// Environment variable through which the agent hands a supervised helper the
 /// run token it will serve, so the helper knows which agent it belongs to
@@ -438,6 +439,8 @@ pub enum ClientKind {
     /// The Actions Ring overlay helper; served without arming — one that
     /// connects on its own is an orphan of a previous run.
     Overlay,
+    /// A CLI or automation client that needs live device I/O.
+    Controller,
 }
 
 #[tarpc::service]
@@ -563,8 +566,9 @@ pub trait Agent {
     async fn observe_action_ring(since: Generation) -> RingObservation;
     /// Declare what kind of client this connection is. Informational for an
     /// armed agent, load-bearing for a dormant one: the macOS dormancy gate
-    /// arms only on [`ClientKind::Gui`]. The takeover probe never declares —
-    /// it speaks only [`Agent::protocol_version`] — and so never arms.
+    /// arms only on [`ClientKind::Gui`] and [`ClientKind::Controller`]. The
+    /// takeover probe never declares — it speaks only
+    /// [`Agent::protocol_version`] — and so never arms.
     async fn declare_client(kind: ClientKind);
     /// Read the current HiResWheel reporting mode from `route`.
     async fn read_wheel(route: DeviceRoute) -> Result<ScrollWheelMode, WriteError>;
@@ -583,4 +587,6 @@ pub trait Agent {
     /// receiver, and with [`PairingFailure::ReceiverNotFound`] for a route
     /// that names no receiver slot or a receiver that is not connected.
     async fn unpair_device(route: DeviceRoute) -> Result<(), PairingFailure>;
+    /// Play one named haptic waveform immediately on `route`.
+    async fn play_haptic(route: DeviceRoute, waveform: HapticWaveform) -> Result<(), WriteError>;
 }

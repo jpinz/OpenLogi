@@ -128,9 +128,10 @@ impl Booted {
     /// (`SuccessfulExit` implies `RunAtLoad`), so preference-off plus no
     /// client in sight means "launchd ran us at login the user opted out
     /// of" — wait briefly, then leave with the `exit(0)` launchd will not
-    /// respawn. Demand is a [`ClientKind::Gui`] declaration, not a mere
-    /// connection: other clients are served without waking anything, and the
-    /// takeover probe never declares at all.
+    /// respawn. Demand is a [`ClientKind::Gui`] or
+    /// [`ClientKind::Controller`] declaration, not a mere connection:
+    /// read-only clients are served without waking anything, and the takeover
+    /// probe never declares at all.
     ///
     /// The same trigger also fires after a crash, and that start was wanted:
     /// an agent armed earlier in this login session that did not leave
@@ -154,8 +155,8 @@ impl Booted {
         loop {
             tokio::select! {
                 Some(kind) = self.core.demand.recv() => match kind {
-                    ClientKind::Gui => {
-                        info!("GUI connected — arming");
+                    ClientKind::Gui | ClientKind::Controller => {
+                        info!(client = ?kind, "device-control client connected — arming");
                         return Some(Wanted(self));
                     }
                     kind => info!(client = ?kind, "served while dormant — not arming"),

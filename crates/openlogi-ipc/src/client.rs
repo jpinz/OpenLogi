@@ -120,9 +120,9 @@ impl ProtocolSkew {
 /// Connect to the agent as `kind`: reach the socket, verify the protocol,
 /// declare — all within [`HANDSHAKE_TIMEOUT`].
 ///
-/// The declaration comes last, and only once the versions agree: it is what
-/// arms a dormant agent when `kind` is [`ClientKind::Gui`], and a mismatched
-/// client must never wake one.
+/// The declaration comes last, and only once the versions agree: it lets the
+/// server apply the arming policy for `kind`, and a mismatched client must
+/// never wake one.
 ///
 /// # Errors
 ///
